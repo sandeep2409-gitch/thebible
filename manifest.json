@@ -1,0 +1,33 @@
+{
+  "name": "పరిశుద్ధ గ్రంథము - తెలుగు బైబిల్",
+  "short_name": "తెలుగు బైబిల్",
+  "description": "ఆఫ్‌లైన్ శోధన, నోట్స్ మరియు హైలైట్‌లతో కూడిన సంపూర్ణ తెలుగు బైబిల్ యాప్",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#1e1b4b",
+  "theme_color": "#1e1b4b",
+  "orientation": "portrait-primary",
+  "categories": ["books", "education", "utilities"],
+  "icons": [
+    {
+      "src": "./logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "బైబిల్ పఠనం",
+      "short_name": "పఠనం",
+      "url": "./index.html#reader",
+      "description": "బైబిల్ చదవడం ప్రారంభించండి"
+    },
+    {
+      "name": "వాక్య శోధన",
+      "short_name": "శోధన",
+      "url": "./index.html#search",
+      "description": "బైబిల్ వాక్యాలను వెతకండి"
+    }
+  ]
+}

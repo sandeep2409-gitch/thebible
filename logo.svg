@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#311042" />
+    </linearGradient>
+    
+    <!-- Gold Foil Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d97706" />
+      <stop offset="35%" stop-color="#f59e0b" />
+      <stop offset="70%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#fef08a" />
+    </linearGradient>
+
+    <!-- Page White Gradient -->
+    <linearGradient id="pageGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#e2e8f0" />
+    </linearGradient>
+
+    <!-- Subtle Glow Shadow -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Outer Rounded Container (For App Icon compatibility) -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+
+  <!-- Decorative Outer Golden Ring -->
+  <circle cx="256" cy="256" r="224" fill="none" stroke="url(#goldGrad)" stroke-width="4" stroke-opacity="0.3" stroke-dasharray="10 5" />
+  <circle cx="256" cy="256" r="212" fill="none" stroke="url(#goldGrad)" stroke-width="1.5" stroke-opacity="0.6" />
+
+  <!-- Open Book Base / Cover -->
+  <path d="M 120 380 Q 256 400 256 360 Q 256 400 392 380 L 412 170 Q 256 190 256 150 Q 256 190 100 170 Z" 
+        fill="#111827" stroke="url(#goldGrad)" stroke-width="3" filter="url(#glow)" />
+
+  <!-- Book Pages (Left Page) -->
+  <path d="M 115 365 Q 256 385 256 348 L 256 138 Q 256 178 95 155 Z" fill="url(#pageGrad)" />
+  <!-- Book Pages (Right Page) -->
+  <path d="M 397 365 Q 256 385 256 348 L 256 138 Q 256 178 417 155 Z" fill="url(#pageGrad)" />
+
+  <!-- Left Page Details (Simulated Telugu text lines) -->
+  <path d="M 130 190 H 220 M 125 220 H 230 M 130 250 H 225 M 125 280 H 230 M 135 310 H 210" 
+        stroke="#475569" stroke-width="4" stroke-linecap="round" opacity="0.6" />
+
+  <!-- Right Page Details (Simulated Telugu text lines) -->
+  <path d="M 382 190 H 292 M 387 220 H 282 M 382 250 H 287 M 387 280 H 282 M 377 310 H 302" 
+        stroke="#475569" stroke-width="4" stroke-linecap="round" opacity="0.6" />
+
+  <!-- Holy Cross in the Center Spine -->
+  <g filter="url(#glow)">
+    <!-- Vertical bar -->
+    <path d="M 256 100 V 300" stroke="url(#goldGrad)" stroke-width="14" stroke-linecap="round" />
+    <!-- Horizontal bar -->
+    <path d="M 216 150 H 296" stroke="url(#goldGrad)" stroke-width="14" stroke-linecap="round" />
+  </g>
+
+  <!-- Glowing Aura behind cross -->
+  <circle cx="256" cy="150" r="30" fill="url(#goldGrad)" opacity="0.4" filter="url(#glow)" />
+
+  <!-- Elegant Telugu Text "సజీవ వాక్యం" (Living Word) or "బైబిల్" (Bible) in curved paths or subtle positioning -->
+  <text x="256" y="445" font-family="'Outfit', 'Noto Sans Telugu', sans-serif" font-weight="bold" font-size="32" 
+        fill="url(#goldGrad)" text-anchor="middle" letter-spacing="1">పరిశుద్ధ గ్రంథము</text>
+</svg>

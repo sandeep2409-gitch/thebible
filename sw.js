@@ -1,4 +1,4 @@
-const CACHE_NAME = 'telugu-bible-v3';
+const CACHE_NAME = 'telugu-bible-v6';
 
 // Static Shell Assets
 const STATIC_ASSETS = [

@@ -136,20 +136,25 @@
             
             <!-- Dynamic Selectors Row -->
             <div class="reader-selectors">
-              <div class="selector-box" id="btn-book-select" style="flex: 2;">
+              <div class="selector-box" id="btn-book-select" style="flex: 3;">
                 <div>
-                  <span class="selector-label">పుస్తకము</span>
-                  <span class="selector-value">ఆదికాండము</span>
+                  <span class="selector-label">గ్రంథము & అధ్యాయము</span>
+                  <span class="selector-value">ఆదికాండము 1</span>
                 </div>
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
               </div>
-              
-              <div class="selector-box" id="btn-chapter-select" style="flex: 1;">
+
+              <div class="selector-box" id="btn-verse-select" style="flex: 2;">
                 <div>
-                  <span class="selector-label">అధ్యాయము</span>
+                  <span class="selector-label">వచనము</span>
                   <span class="selector-value">1</span>
                 </div>
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+
+              <!-- Focused Reading Mode Toggle -->
+              <div class="icon-btn" id="btn-reader-focus" style="width: 48px; height: 48px; border-radius: 14px; background: var(--bg-secondary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--text-primary); cursor: pointer;" title="ఏకాగ్రత పఠనం (ఫోకస్ మోడ్)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
               </div>
 
               <!-- Audio Speaker Toggle Box -->
@@ -284,7 +289,12 @@
   <!-- Book/Chapter selection Bottom drawer sheet -->
   <section class="bottom-sheet" id="bottom-selector-sheet">
     <div class="sheet-header">
-      <h3 class="page-title" id="sheet-title-label">పుస్తకాన్ని ఎంచుకోండి</h3>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button class="icon-btn" id="btn-sheet-back" style="border:none; background:transparent; display:none; padding:4px 8px; width:auto; height:auto; color:var(--accent-color); font-weight:700;" title="వెనుకకు వెళ్ళు">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right:2px; vertical-align:middle;"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h3 class="page-title" id="sheet-title-label">పుస్తకాన్ని ఎంచుకోండి</h3>
+      </div>
       <button class="icon-btn" id="btn-sheet-close" style="border:none; background:transparent;">
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>

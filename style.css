@@ -702,6 +702,74 @@ html, body {
   border-bottom: 2px solid var(--gold-primary);
 }
 
+/* --- Focused Reading Mode & Fast Reading Styling --- */
+.focus-mode-active .verse-row {
+  opacity: 0.28;
+  filter: grayscale(30%);
+  transition: opacity 0.35s ease, filter 0.35s ease, background-color 0.3s ease, border-left-color 0.3s ease;
+}
+
+.focus-mode-active .verse-row.focused {
+  opacity: 1 !important;
+  filter: none !important;
+  background-color: rgba(224, 206, 179, 0.18);
+  border-left: 3px solid var(--gold-primary);
+  padding-left: 8px;
+  margin-left: -11px;
+  border-radius: 4px;
+}
+
+.verse-pulse {
+  animation: verseFocusPulse 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes verseFocusPulse {
+  0% {
+    background-color: rgba(234, 179, 8, 0.35);
+    border-radius: 4px;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+#btn-reader-focus.active {
+  background: var(--gold-glow) !important;
+  color: var(--gold-primary) !important;
+  border-color: var(--gold-primary) !important;
+  box-shadow: 0 0 12px rgba(217, 119, 6, 0.15);
+}
+
+/* Responsive adjustment for 5 elements on mobile viewports */
+@media (max-width: 600px) {
+  .reader-selectors {
+    gap: 6px !important;
+    padding-bottom: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+  .selector-box {
+    padding: 8px 8px !important;
+    border-radius: 12px !important;
+  }
+  .selector-label {
+    font-size: 0.62rem !important;
+  }
+  .selector-value {
+    font-size: 0.82rem !important;
+  }
+  #btn-reader-focus,
+  #btn-reader-audio {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 12px !important;
+  }
+  #btn-reader-focus svg,
+  #btn-reader-audio svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
 /* Reader navigation footer */
 .reader-nav-footer {
   display: flex;
@@ -710,6 +778,99 @@ html, body {
   padding: 1.5rem 0;
   margin-top: 2rem;
   border-top: 1px solid var(--border-color);
+}
+
+/* Bottom Selection Sheet Back Navigation */
+#btn-sheet-back {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--accent-color);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+#btn-sheet-back:hover {
+  background-color: var(--border-color);
+  transform: translateX(-3px);
+}
+
+/* Bottom Selector Sheet Vertical List Layout */
+.sheet-vertical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.sheet-book-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.sheet-book-row:hover {
+  border-color: var(--accent-color);
+  background-color: var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+.sheet-book-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sheet-book-index-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--border-color);
+  color: var(--text-secondary);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.sheet-book-title-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.sheet-book-telugu {
+  font-family: 'Noto Sans Telugu', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sheet-book-english {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.sheet-book-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-primary);
 }
 
 /* --- OVERLAYS & SHEETS (Interactive dialogs) --- */

@@ -7,12 +7,14 @@ const State = {
   booksList: [], // Loaded from Books.json
   currentBook: "Genesis",
   currentChapter: "1",
+  currentVerse: "1",
   currentView: "home",
   
   // User Personalization (saved in localStorage)
   settings: {
     theme: "notebook",
     fontSize: 18,  // Pixels for reading text
+    isFocusMode: false, // Focus Reading mode toggle
   },
   
   // User Data (saved in localStorage)
@@ -431,8 +433,7 @@ async function renderReaderScreen() {
   const bookObj = State.booksList.find(b => b.english === State.currentBook);
   const bookTelugu = bookObj ? bookObj.telugu : State.currentBook;
   
-  document.getElementById("btn-book-select").querySelector(".selector-value").textContent = bookTelugu;
-  document.getElementById("btn-chapter-select").querySelector(".selector-value").textContent = State.currentChapter;
+  document.getElementById("btn-book-select").querySelector(".selector-value").textContent = `${bookTelugu} ${State.currentChapter}`;
   
   // Show loaded loading screen first
   versesContainer.innerHTML = `
@@ -463,6 +464,25 @@ async function renderReaderScreen() {
     `;
     return;
   }
+
+  // Ensure currentVerse is valid for this chapter
+  const totalVersesInCh = chapterData.verses.length;
+  if (parseInt(State.currentVerse) > totalVersesInCh) {
+    State.currentVerse = "1";
+  }
+  
+  // Update verse selector label
+  document.getElementById("btn-verse-select").querySelector(".selector-value").textContent = State.currentVerse;
+
+  // Toggle Focus Mode active button state
+  const focusBtn = document.getElementById("btn-reader-focus");
+  if (focusBtn) {
+    if (State.settings.isFocusMode) {
+      focusBtn.classList.add("active");
+    } else {
+      focusBtn.classList.remove("active");
+    }
+  }
   
   // Build verses list
   let html = `<div class="verses-list">`;
@@ -474,6 +494,9 @@ async function renderReaderScreen() {
     let rowClass = "verse-row";
     if (hlColor) rowClass += ` hl-${hlColor}`;
     if (hasBookmark) rowClass += " has-bookmark";
+    if (State.settings.isFocusMode && vs.verse === State.currentVerse) {
+      rowClass += " focused";
+    }
     
     html += `
       <div class="${rowClass}" data-verse="${vs.verse}" onclick="handleVerseInteraction(this, '${vs.verse}', \`${vs.text.replace(/"/g, '&quot;')}\`)">
@@ -497,6 +520,7 @@ async function renderReaderScreen() {
     nextBtn.style.display = "flex";
     nextBtn.onclick = () => {
       State.currentChapter = (currentChNum + 1).toString();
+      State.currentVerse = "1";
       updateReaderParams();
       renderReaderScreen();
     };
@@ -508,6 +532,7 @@ async function renderReaderScreen() {
       nextBtn.onclick = () => {
         State.currentBook = State.booksList[currentBookIndex + 1].english;
         State.currentChapter = "1";
+        State.currentVerse = "1";
         updateReaderParams();
         renderReaderScreen();
       };
@@ -521,6 +546,7 @@ async function renderReaderScreen() {
     prevBtn.style.display = "flex";
     prevBtn.onclick = () => {
       State.currentChapter = (currentChNum - 1).toString();
+      State.currentVerse = "1";
       updateReaderParams();
       renderReaderScreen();
     };
@@ -535,6 +561,7 @@ async function renderReaderScreen() {
         // Fetch book to know chapter count
         const prevBookData = await fetchBookData(prevBookName);
         State.currentChapter = prevBookData ? prevBookData.count : "1";
+        State.currentVerse = "1";
         updateReaderParams();
         renderReaderScreen();
       };
@@ -544,7 +571,30 @@ async function renderReaderScreen() {
   }
   
   versesContainer.innerHTML = html;
-  versesContainer.scrollTop = 0;
+
+  // Toggle container focus-mode-active class
+  if (State.settings.isFocusMode) {
+    versesContainer.classList.add("focus-mode-active");
+  } else {
+    versesContainer.classList.remove("focus-mode-active");
+  }
+
+  // Scroll to targeted verse row beautifully
+  const targetRow = versesContainer.querySelector(`.verse-row[data-verse="${State.currentVerse}"]`);
+  if (targetRow) {
+    setTimeout(() => {
+      targetRow.scrollIntoView({ behavior: State.shouldPulseVerse ? 'smooth' : 'auto', block: 'center' });
+      if (State.shouldPulseVerse) {
+        targetRow.classList.add("verse-pulse");
+        setTimeout(() => {
+          targetRow.classList.remove("verse-pulse");
+        }, 2000);
+        State.shouldPulseVerse = false; // Reset
+      }
+    }, 80);
+  } else {
+    versesContainer.scrollTop = 0;
+  }
   
   // Save to Reading History
   const historyItem = {
@@ -571,6 +621,28 @@ function updateReaderParams() {
 let activeSelectedVerse = null; // Stores { verseNum, text, element }
 
 function handleVerseInteraction(element, verseNum, text) {
+  if (State.settings.isFocusMode) {
+    if (State.currentVerse !== verseNum) {
+      State.currentVerse = verseNum;
+      
+      // Update UI Selector
+      document.getElementById("btn-verse-select").querySelector(".selector-value").textContent = verseNum;
+      
+      // Set focused class
+      document.querySelectorAll(".verse-row").forEach(r => {
+        if (r.getAttribute("data-verse") === verseNum) {
+          r.classList.add("focused");
+        } else {
+          r.classList.remove("focused");
+        }
+      });
+      
+      // Scroll smoothly to center
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return; // Return early
+    }
+  }
+
   activeSelectedVerse = { verseNum, text, element };
   
   const sheet = document.getElementById("verse-action-sheet");
@@ -762,6 +834,7 @@ function setupActionListeners() {
 
 // --- BOOK AND CHAPTER CHOICE BOTTOM SHEETS ---
 let activeSelectionMode = ""; // 'book' or 'chapter'
+let tempSelectedBook = "";    // Temporarily holds selected book in drill-down
 
 function openSelectorSheet(mode) {
   activeSelectionMode = mode;
@@ -769,6 +842,7 @@ function openSelectorSheet(mode) {
   const backdrop = document.getElementById("modal-backdrop");
   const title = document.getElementById("sheet-title-label");
   const content = document.getElementById("sheet-scroll-content");
+  const backBtn = document.getElementById("btn-sheet-back");
   
   if (!sheet || !backdrop || !content) return;
   
@@ -776,63 +850,76 @@ function openSelectorSheet(mode) {
   
   if (mode === "book") {
     title.textContent = "పుస్తకాన్ని ఎంచుకోండి";
+    if (backBtn) backBtn.style.display = "none"; // Hide back button on book list
+    tempSelectedBook = ""; // Reset
     
-    // Render books categorised in grids
+    // Render books categorised in vertical lists
     const otTitle = document.createElement("h3");
     otTitle.className = "card-title";
     otTitle.style.marginTop = "0";
     otTitle.textContent = "పాత నిబంధన";
     content.appendChild(otTitle);
     
-    const otGrid = document.createElement("div");
-    otGrid.className = "sheet-chapters-grid";
-    otGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(110px, 1fr))";
-    otGrid.style.marginBottom = "2rem";
+    const otList = document.createElement("div");
+    otList.className = "sheet-vertical-list";
+    otList.style.marginBottom = "2rem";
     
     const ntTitle = document.createElement("h3");
     ntTitle.className = "card-title";
     ntTitle.textContent = "క్రొత్త నిబంధన";
     
-    const ntGrid = document.createElement("div");
-    ntGrid.className = "sheet-chapters-grid";
-    ntGrid.style.gridTemplateColumns = "repeat(auto-fill, minmax(110px, 1fr))";
+    const ntList = document.createElement("div");
+    ntList.className = "sheet-vertical-list";
     
     State.booksList.forEach((book, index) => {
       const btn = document.createElement("button");
-      btn.className = "chapter-btn";
-      btn.style.aspectRatio = "auto";
-      btn.style.padding = "12px 6px";
-      btn.style.height = "52px";
-      btn.innerHTML = `<span style="font-family: 'Noto Sans Telugu', sans-serif; font-size: 0.8rem; font-weight:600; line-height:1.2;">${book.telugu}</span>`;
+      btn.className = "sheet-book-row";
+      
+      const relativeIndex = (index >= 39) ? (index - 39 + 1) : (index + 1);
+      
+      btn.innerHTML = `
+        <div class="sheet-book-left">
+          <div class="sheet-book-index-badge">${relativeIndex}</div>
+          <div class="sheet-book-title-group">
+            <span class="sheet-book-telugu">${book.telugu}</span>
+            <span class="sheet-book-english">${book.english}</span>
+          </div>
+        </div>
+        <div class="sheet-book-chevron">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      `;
       
       btn.onclick = () => {
-        State.currentBook = book.english;
-        State.currentChapter = "1"; // Reset to chapter 1
-        closeSelectorSheet();
-        updateReaderParams();
-        renderReaderScreen();
+        tempSelectedBook = book.english;
+        openSelectorSheet("chapter"); // Drill down to chapters within same sheet!
       };
       
       if (index >= 39) {
-        ntGrid.appendChild(btn);
+        ntList.appendChild(btn);
       } else {
-        otGrid.appendChild(btn);
+        otList.appendChild(btn);
       }
     });
     
-    content.appendChild(otGrid);
+    content.appendChild(otList);
     content.appendChild(ntTitle);
-    content.appendChild(ntGrid);
+    content.appendChild(ntList);
     
   } else if (mode === "chapter") {
-    title.textContent = "అధ్యాయాన్ని ఎంచుకోండి";
+    const targetBookName = tempSelectedBook || State.currentBook;
+    const bookObj = State.booksList.find(b => b.english === targetBookName);
+    const bookTeluguName = bookObj ? bookObj.telugu : targetBookName;
+    
+    title.textContent = bookTeluguName;
+    if (backBtn) backBtn.style.display = "inline-flex"; // Show back button on chapter list
     
     // We must fetch book data or look at loaded Cache to know chapter counts
-    const bookData = BookCache[State.currentBook];
+    const bookData = BookCache[targetBookName];
     if (!bookData) {
       content.innerHTML = `<div style="text-align:center; padding: 2rem;">లోడ్ అవుతోంది...</div>`;
-      // Load index count in background
-      fetchBookData(State.currentBook).then(data => {
+      // Load count in background
+      fetchBookData(targetBookName).then(data => {
         if (data) openSelectorSheet("chapter"); // Re-run
       });
       return;
@@ -843,13 +930,52 @@ function openSelectorSheet(mode) {
     grid.className = "sheet-chapters-grid";
     
     for (let i = 1; i <= totalChapters; i++) {
+      const isCurrentlyActive = (State.currentBook === targetBookName) && (State.currentChapter === i.toString());
       const btn = document.createElement("button");
-      btn.className = `chapter-btn ${State.currentChapter === i.toString() ? 'selected' : ''}`;
+      btn.className = `chapter-btn ${isCurrentlyActive ? 'selected' : ''}`;
       btn.textContent = i;
       btn.onclick = () => {
+        State.currentBook = targetBookName;
         State.currentChapter = i.toString();
+        State.currentVerse = "1"; // Reset to verse 1
         closeSelectorSheet();
         updateReaderParams();
+        renderReaderScreen();
+      };
+      grid.appendChild(btn);
+    }
+    content.appendChild(grid);
+  } else if (mode === "verse") {
+    title.textContent = "వచనాన్ని ఎంచుకోండి";
+    if (backBtn) backBtn.style.display = "none"; // Hide back button
+    
+    const bookData = BookCache[State.currentBook];
+    if (!bookData) {
+      content.innerHTML = `<div style="text-align:center; padding: 2rem;">లోడ్ అవుతోంది...</div>`;
+      fetchBookData(State.currentBook).then(data => {
+        if (data) openSelectorSheet("verse"); // Re-run
+      });
+      return;
+    }
+    
+    const chapterData = bookData.chapters.find(ch => ch.chapter === State.currentChapter);
+    if (!chapterData) {
+      content.innerHTML = `<div style="text-align:center; padding: 2rem;">అధ్యాయాన్ని కనుగొనలేకపోయాము.</div>`;
+      return;
+    }
+    
+    const totalVerses = chapterData.verses.length;
+    const grid = document.createElement("div");
+    grid.className = "sheet-chapters-grid";
+    
+    for (let i = 1; i <= totalVerses; i++) {
+      const btn = document.createElement("button");
+      btn.className = `chapter-btn ${State.currentVerse === i.toString() ? 'selected' : ''}`;
+      btn.textContent = i;
+      btn.onclick = () => {
+        State.currentVerse = i.toString();
+        State.shouldPulseVerse = true; // Trigger visual golden flash
+        closeSelectorSheet();
         renderReaderScreen();
       };
       grid.appendChild(btn);
@@ -1579,6 +1705,63 @@ const AudioPlayer = {
   }
 };
 
+// --- Focused Reading and Fast Reading Helper Functions ---
+function toggleFocusMode() {
+  State.settings.isFocusMode = !State.settings.isFocusMode;
+  saveData("settings", State.settings);
+  
+  const focusBtn = document.getElementById("btn-reader-focus");
+  const container = document.getElementById("verses-scroll-container");
+  
+  if (State.settings.isFocusMode) {
+    if (focusBtn) focusBtn.classList.add("active");
+    if (container) {
+      container.classList.add("focus-mode-active");
+      
+      // Highlight currently selected verse row
+      const target = container.querySelector(`.verse-row[data-verse="${State.currentVerse}"]`);
+      if (target) {
+        document.querySelectorAll(".verse-row").forEach(r => r.classList.remove("focused"));
+        target.classList.add("focused");
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+    showToast("ఏకాగ్రత పఠనం ప్రారంభించబడింది!");
+  } else {
+    if (focusBtn) focusBtn.classList.remove("active");
+    if (container) {
+      container.classList.remove("focus-mode-active");
+      document.querySelectorAll(".verse-row").forEach(r => r.classList.remove("focused"));
+    }
+    showToast("ఏకాగ్రత పఠనం ముగిసింది!");
+  }
+}
+
+function navigateVerse(direction) {
+  if (State.currentView !== "reader") return;
+  const verses = document.querySelectorAll(".verse-row");
+  if (verses.length === 0) return;
+  
+  let currentIndex = Array.from(verses).findIndex(v => v.getAttribute("data-verse") === State.currentVerse);
+  if (currentIndex === -1) currentIndex = 0;
+  
+  let newIndex = currentIndex + direction;
+  if (newIndex >= 0 && newIndex < verses.length) {
+    const nextRow = verses[newIndex];
+    const newVerseNum = nextRow.getAttribute("data-verse");
+    
+    State.currentVerse = newVerseNum;
+    document.getElementById("btn-verse-select").querySelector(".selector-value").textContent = newVerseNum;
+    
+    if (State.settings.isFocusMode) {
+      verses.forEach(r => r.classList.remove("focused"));
+      nextRow.classList.add("focused");
+    }
+    
+    nextRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
 // --- CORE APP SETUP UPON LOAD ---
 async function main() {
   initDataStore();
@@ -1604,8 +1787,16 @@ async function main() {
   
   // Selectors action triggers
   document.getElementById("btn-book-select").onclick = () => openSelectorSheet("book");
-  document.getElementById("btn-chapter-select").onclick = () => openSelectorSheet("chapter");
+  document.getElementById("btn-verse-select").onclick = () => openSelectorSheet("verse");
+  document.getElementById("btn-reader-focus").onclick = () => toggleFocusMode();
   document.getElementById("btn-sheet-close").onclick = () => closeSelectorSheet();
+  
+  const backBtn = document.getElementById("btn-sheet-back");
+  if (backBtn) {
+    backBtn.onclick = () => {
+      openSelectorSheet("book"); // Navigate back to books grid
+    };
+  }
   
   // Floating Actions trigger options modal
   document.getElementById("btn-header-options").onclick = () => openOptionsDialog();
@@ -1659,6 +1850,21 @@ async function main() {
   document.getElementById("audio-btn-next").onclick = () => AudioPlayer.next();
   document.getElementById("audio-btn-prev").onclick = () => AudioPlayer.prev();
   document.getElementById("audio-speed-select").onchange = (e) => AudioPlayer.setSpeed(e.target.value);
+
+  // Desktop keyboard Arrow key listeners for smooth speed-reading traversal
+  window.addEventListener("keydown", (e) => {
+    if (State.currentView !== "reader") return;
+    // Do not trigger key behaviors if user is writing in a form control or search field
+    if (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") return;
+    
+    if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+      e.preventDefault();
+      navigateVerse(1);
+    } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+      e.preventDefault();
+      navigateVerse(-1);
+    }
+  });
 }
 
 // Launch

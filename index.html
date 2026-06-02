@@ -5,36 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   
-  <!-- SEO & PWA Optimization -->
+  
   <title>పరిశుద్ధ గ్రంథము - తెలుగు బైబిల్ యాప్</title>
   <meta name="description" content="ఆఫ్‌లైన్ శోధన, నోట్స్, హైలైట్‌లతో కూడిన సంపూర్ణ తెలుగు బైబిల్. ఇంటర్నెట్ లేకపోయినా 100% ఆఫ్‌లైన్‌లో చదువుకోండి.">
   <meta name="theme-color" content="#1e1b4b">
   
-  <!-- Apple/iOS Web App Support -->
+  
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="తెలుగు బైబిల్">
   <link rel="apple-touch-icon" href="./logo.svg">
   
-  <!-- App Manifest & Fonts -->
+  
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/svg+xml" href="./logo.svg">
   
-  <!-- Stylesheets -->
+  
   <link rel="stylesheet" href="./style.css">
 </head>
 <body data-theme="notebook">
 
-  <!-- Floating Background Glows -->
+  
   <div class="decor-aura decor-aura-1"></div>
   <div class="decor-aura decor-aura-2"></div>
 
   <div class="app-container">
     
-    <!-- 2. CONTENT AREA FRAMEWORK -->
+    
     <main class="content-area">
       
-      <!-- Content Header -->
+      
       <header class="app-header">
         <div class="header-left">
           <img src="./logo.svg" alt="App Logo" class="mobile-header-logo" style="display: block;">
@@ -48,19 +48,19 @@
         </div>
       </header>
 
-      <!-- Screens View Panel -->
+      
       <section class="view-panel">
         
-        <!-- SCREEN 1: HOME/DASHBOARD -->
+        
         <article class="screen active" id="home-screen">
           <div class="home-grid">
             
-            <!-- Left Main Column -->
+            
             <div style="display: flex; flex-direction: column; gap: 24px;">
-              <!-- Verse of the Day Container -->
+              
               <div id="daily-verse-container"></div>
               
-              <!-- Quick navigation Books Container -->
+              
               <div class="quick-nav-card">
                 <h3 class="card-title">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold-primary)" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
@@ -71,14 +71,14 @@
                   <button class="toggle-btn" id="toggle-nt">క్రొత్త నిబంధన</button>
                 </div>
                 <div class="books-grid" id="quick-books-grid">
-                  <!-- JS injected books list -->
+                  
                 </div>
               </div>
             </div>
             
-            <!-- Right Sidebar Column -->
+            
             <div class="stat-panel-card">
-              <!-- Reading Progress Tracker -->
+              
               <div class="stat-box">
                 <h4 class="card-title" style="margin-bottom:8px; font-size:1rem;">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-color)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -95,7 +95,7 @@
                 </div>
               </div>
 
-              <!-- Stats counter box -->
+              
               <div class="stat-box">
                 <h4 class="card-title" style="margin-bottom:12px; font-size:1rem;">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold-primary)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
@@ -117,7 +117,7 @@
                 </div>
               </div>
 
-              <!-- Recently Read Container -->
+              
               <div class="stat-box">
                 <h4 class="card-title" style="margin-bottom:8px; font-size:1rem;">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -130,11 +130,11 @@
           </div>
         </article>
 
-        <!-- SCREEN 2: BIBLE READER -->
+        
         <article class="screen" id="reader-screen">
           <div class="reader-container">
             
-            <!-- Dynamic Selectors Row -->
+            
             <div class="reader-selectors">
               <div class="selector-box" id="btn-book-select" style="flex: 3;">
                 <div>
@@ -152,18 +152,18 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
               </div>
 
-              <!-- Focused Reading Mode Toggle -->
+              
               <div class="icon-btn" id="btn-reader-focus" style="width: 48px; height: 48px; border-radius: 14px; background: var(--bg-secondary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--text-primary); cursor: pointer;" title="ఏకాగ్రత పఠనం (ఫోకస్ మోడ్)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
               </div>
 
-              <!-- Audio Speaker Toggle Box -->
+              
               <div class="icon-btn" id="btn-reader-audio" style="width: 48px; height: 48px; border-radius: 14px; background: var(--bg-secondary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--text-primary); cursor: pointer;" title="ఆడియో చదువు">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
               </div>
             </div>
 
-            <!-- Floating Audio Controller Panel -->
+            
             <div class="audio-controller-panel" id="audio-panel" style="display: none;">
               <div class="audio-info">
                 <span class="audio-title">ఆడియో పఠనం (వినికిడి)</span>
@@ -193,12 +193,12 @@
               </div>
             </div>
             
-            <!-- Verse Stream list -->
+            
             <div class="verses-scroll-container" id="verses-scroll-container">
-              <!-- Verses stream will load dynamically here -->
+              
             </div>
             
-            <!-- Reader paging buttons -->
+            
             <div class="reader-nav-footer">
               <button class="btn-secondary" id="reader-prev-btn">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
@@ -212,12 +212,12 @@
           </div>
         </article>
 
-        <!-- SCREEN 3: ADVANCED GLOBAL SEARCH -->
+        
         <article class="screen" id="search-screen">
           <div class="search-container">
             <h2 class="card-title" style="font-size: 1.3rem;">బైబిల్ వాక్య శోధన</h2>
             
-            <!-- Input wrapper -->
+            
             <div class="search-input-wrapper">
               <input type="text" class="search-input" id="bible-search-input" placeholder="వెతకాల్సిన పదాన్ని టైప్ చేయండి... (ఉదాహరణకు: కాపరి, ప్రేమ)">
               <div class="search-icon-inside">
@@ -225,10 +225,10 @@
               </div>
             </div>
             
-            <!-- Search Results metadata info -->
+            
             <div class="search-stats" id="search-stats-label"></div>
             
-            <!-- Search Results stream -->
+            
             <div id="search-results-container">
               <div style="text-align: center; color: var(--text-muted); padding: 4rem 1rem;">
                 శోధించడానికి కనీసం రెండు అక్షరాలను టైప్ చేయండి.
@@ -237,11 +237,11 @@
           </div>
         </article>
 
-        <!-- SCREEN 4: SAVED DATA & NOTES HUB -->
+        
         <article class="screen" id="saved-screen">
           <div class="saved-container">
             
-            <!-- Saved Segment Tabs -->
+            
             <div class="saved-tabs">
               <button class="saved-tab-btn active" data-tab="bookmarks">బుక్‌మార్క్‌లు</button>
               <button class="saved-tab-btn" data-tab="highlights">హైలైట్లు</button>
@@ -249,16 +249,16 @@
               <button class="saved-tab-btn" data-tab="settings">బ్యాకప్</button>
             </div>
             
-            <!-- Dynamic stream of saved items -->
+            
             <div id="saved-items-container">
-              <!-- Dynamically rendered -->
+              
             </div>
           </div>
         </article>
         
       </section>
 
-      <!-- 3. MOBILE BOTTOM NAVIGATION BAR -->
+      
       <footer class="mobile-nav-bar">
         <button class="mobile-nav-btn active" data-target="home" onclick="window.location.hash = '#home'">
           <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -281,12 +281,12 @@
     </main>
   </div>
 
-  <!-- --- MODALS & INTERACTIVE SLIDE OVERLAYS --- -->
   
-  <!-- Backdrop for dialogs dismissals -->
+  
+  
   <div class="modal-backdrop" id="modal-backdrop"></div>
   
-  <!-- Book/Chapter selection Bottom drawer sheet -->
+  
   <section class="bottom-sheet" id="bottom-selector-sheet">
     <div class="sheet-header">
       <div style="display:flex; align-items:center; gap:8px;">
@@ -300,16 +300,16 @@
       </button>
     </div>
     <div class="sheet-content" id="sheet-scroll-content">
-      <!-- Grid contents injected dynamically -->
+      
     </div>
   </section>
 
-  <!-- Interactive Verse Actions Overlay sheet -->
+  
   <section class="verse-action-sheet" id="verse-action-sheet">
     <div class="selected-verse-ref" id="action-verse-ref">ఆదికాండము 1:1</div>
     <div class="selected-verse-preview" id="action-verse-preview">ప్రారంభంలో దేవుడు ఆకాశాన్ని భూమిని సృష్టించాడు.</div>
     
-    <!-- Pastel highlighters bar -->
+    
     <div class="highlighter-bar">
       <span style="font-size:0.85rem; font-weight:600; color:var(--text-secondary); margin-right:6px;">హైలైట్:</span>
       <div class="hl-circle hl-circle-yellow" data-color="ylw" title="పసుపు రంగు"></div>
@@ -321,7 +321,7 @@
       </div>
     </div>
     
-    <!-- Option actions -->
+    
     <div class="action-row-buttons">
       <button class="action-card-btn" id="btn-action-bookmark">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
@@ -341,14 +341,14 @@
       </button>
     </div>
     
-    <!-- Expandable Notes Input Field -->
+    
     <div class="note-input-container" id="action-note-input-container">
       <textarea class="note-textarea" id="action-note-text" placeholder="ఈ వాక్యంపై మీ ఆలోచనలను ఇక్కడ రాసుకోండి..."></textarea>
       <button class="btn-primary" id="btn-save-note" style="align-self:flex-end;">భద్రపరచు</button>
     </div>
   </section>
 
-  <!-- PWA Options Panel Popup Modal (Reader adjustments) -->
+  
   <section class="reader-options-dialog" id="reader-options-dialog">
     <button class="dialog-close-btn" id="btn-options-close">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -356,7 +356,7 @@
     
     <h3 class="card-title" style="margin-top:0;">అక్షర పరిమాణం</h3>
     
-    <!-- Font Size Adjuster slider -->
+    
     <div style="margin-top:1.5rem;">
       <div class="font-size-adjuster">
         <span style="font-size:0.85rem; font-weight:600; color:var(--text-secondary);">అక్షర పరిమాణం:</span>
@@ -370,7 +370,7 @@
     </div>
   </section>
 
-  <!-- PWA Install Prompt Banner bottom bar -->
+  
   <section class="pwa-install-banner" id="pwa-install-banner">
     <div class="pwa-install-info">
       <img src="./logo.svg" alt="PWA Bible Logo" style="width:36px; height:36px;">
@@ -385,7 +385,7 @@
     </div>
   </section>
 
-  <!-- Load PWA controller script -->
+  
   <script src="./app.js"></script>
 </body>
 </html>

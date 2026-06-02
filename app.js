@@ -1,35 +1,33 @@
-/* ==========================================================================
-   TELUGU BIBLE PWA - CENTRAL CLIENT SIDE ENGINE (app.js)
-   ========================================================================== */
 
-// --- Global Application State ---
+
+
 const State = {
-  booksList: [], // Loaded from Books.json
+  booksList: [], 
   currentBook: "Genesis",
   currentChapter: "1",
   currentVerse: "1",
   currentView: "home",
   
-  // User Personalization (saved in localStorage)
+  
   settings: {
     theme: "notebook",
-    fontSize: 18,  // Pixels for reading text
-    isFocusMode: false, // Focus Reading mode toggle
+    fontSize: 18,  
+    isFocusMode: false, 
   },
   
-  // User Data (saved in localStorage)
-  history: [],    // Array of { book, chapter, timestamp }
-  bookmarks: [],  // Array of { book, chapter, verse }
-  highlights: {}, // Object: { "Book-Ch-Vs": "color_class" }
-  notes: {},      // Object: { "Book-Ch-Vs": "note_text" }
-  readChapters: {}, // Object: { "Book-Ch": true } for reading goals
+  
+  history: [],    
+  bookmarks: [],  
+  highlights: {}, 
+  notes: {},      
+  readChapters: {}, 
 };
 
-// --- In-memory cache of loaded books to prevent redundant network fetches ---
+
 const BookCache = {};
 
-// --- Curated Inspirational Verses for Offline "Verse of the Day" ---
-// Deterministic calendar seed ensures all users see the same inspiring verse daily without network dependencies.
+
+
 const DAILY_VERSES = [
   { ref: "కీర్తనల గ్రంథము 23:1", text: "యెహోవా నా కాపరి; నాకు లేమి కలుగదు." },
   { ref: "యెషయా గ్రంథము 41:10", text: "నీవు నా దాసుడవనియు నేను నిన్ను ఉపేక్షింపక ఏర్పరచుకొంటిననియు చెప్పియున్నాను భయపడకుము నేను నీకు తోడైయున్నాను కలవరపడకుము నేను నీ దేవుడనై యున్నాను నేను నిన్ను బలపరతును నీకు సహాయము చేయువాడను నేనే." },
@@ -64,22 +62,22 @@ const DAILY_VERSES = [
   { ref: "రోమీయులకు 15:13", text: "కాగా మీరు పరిశుద్ధాత్మ శక్తివలన అధికముగా నిరీక్షణగలవారగుటకు నిరీక్షణకర్తయగు దేవుడు విశ్వాసము ద్వారా సమస్త ఆనందముతోను సమాధానముతోను మిమ్మును నింపును గాక." }
 ];
 
-// --- Initialize Local Data and Settings ---
+
 function initDataStore() {
-  // Load settings
+  
   const localSettings = localStorage.getItem("tb_settings");
   if (localSettings) {
     State.settings = JSON.parse(localSettings);
   }
   
-  // Load user records
+  
   State.history = JSON.parse(localStorage.getItem("tb_history")) || [];
   State.bookmarks = JSON.parse(localStorage.getItem("tb_bookmarks")) || [];
   State.highlights = JSON.parse(localStorage.getItem("tb_highlights")) || {};
   State.notes = JSON.parse(localStorage.getItem("tb_notes")) || {};
   State.readChapters = JSON.parse(localStorage.getItem("tb_read_chapters")) || {};
 
-  // Apply saved theme immediately to prevent layout flash
+  
   applyTheme(State.settings.theme);
 }
 
@@ -87,15 +85,15 @@ function saveData(key, data) {
   localStorage.setItem(`tb_${key}`, JSON.stringify(data));
 }
 
-// --- Theme Engine ---
+
 function applyTheme(theme) {
-  // Always enforce the premium notebook theme, ignoring legacy dark options
+  
   document.documentElement.setAttribute("data-theme", "notebook");
   State.settings.theme = "notebook";
   saveData("settings", State.settings);
 }
 
-// --- Service Worker Registration & Status ---
+
 function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -134,22 +132,22 @@ function updateOfflineSyncStatus(isAvailable) {
   }
 }
 
-// --- Hash-Based Client Routing ---
+
 function handleRouting() {
   const hash = window.location.hash || "#home";
   const view = hash.replace("#", "").split("?")[0];
   
-  // Clean active states in nav elements
+  
   document.querySelectorAll(".nav-item").forEach(item => item.classList.remove("active"));
   document.querySelectorAll(".mobile-nav-btn").forEach(btn => btn.classList.remove("active"));
   
-  // Highlight correct menu items
+  
   const menuTarget = document.querySelector(`.nav-item[data-target="${view}"]`);
   const mobileTarget = document.querySelector(`.mobile-nav-btn[data-target="${view}"]`);
   if (menuTarget) menuTarget.classList.add("active");
   if (mobileTarget) mobileTarget.classList.add("active");
   
-  // Switch Screens
+  
   document.querySelectorAll(".screen").forEach(screen => {
     screen.classList.remove("active");
   });
@@ -160,11 +158,11 @@ function handleRouting() {
     State.currentView = view;
   }
   
-  // Perform screen specific render actions
+  
   if (view === "home") {
     renderHomeScreen();
   } else if (view === "reader") {
-    // If routing has book/chapter params, load them
+    
     const params = new URLSearchParams(window.location.hash.split("?")[1] || "");
     const bookParam = params.get("book");
     const chParam = params.get("chapter");
@@ -175,7 +173,7 @@ function handleRouting() {
     }
     renderReaderScreen();
   } else if (view === "search") {
-    // Focus search input
+    
     setTimeout(() => {
       document.getElementById("bible-search-input")?.focus();
     }, 100);
@@ -184,7 +182,7 @@ function handleRouting() {
   }
 }
 
-// --- Bible Data Loading Engine ---
+
 async function fetchBooksIndex() {
   if (State.booksList.length > 0) return State.booksList;
   
@@ -192,19 +190,19 @@ async function fetchBooksIndex() {
     const response = await fetch('./data/Books.json');
     if (!response.ok) throw new Error("Index load error");
     const data = await response.json();
-    // Parse out book mappings
+    
     State.booksList = data.map(item => item.book);
     return State.booksList;
   } catch (err) {
     console.error("[Data Engine] Failed to fetch Books index:", err);
-    // Fallback static structure if fetching fails (so the shell remains perfectly operational)
+    
     State.booksList = [
       { english: "Genesis", telugu: "ఆదికాండము" },
       { english: "Exodus", telugu: "నిర్గమకాండము" },
       { english: "Leviticus", telugu: "లేవీయకాండము" },
       { english: "Numbers", telugu: "సంఖ్యాకాండము" },
       { english: "Deuteronomy", telugu: "ద్వితీయోపదేశకాండమ" }
-      // ... truncated fallback
+      
     ];
     return State.booksList;
   }
@@ -225,7 +223,7 @@ async function fetchBookData(bookName) {
   }
 }
 
-// --- SCREEN 1: HOME/DASHBOARD RENDER ---
+
 function renderHomeScreen() {
   renderDailyVerse();
   renderRecentlyRead();
@@ -237,7 +235,7 @@ function renderDailyVerse() {
   const container = document.getElementById("daily-verse-container");
   if (!container) return;
   
-  // Generate a seed based on year, month, date
+  
   const now = new Date();
   const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
   const verseIndex = dayOfYear % DAILY_VERSES.length;
@@ -264,10 +262,10 @@ function renderDailyVerse() {
     </div>
   `;
 
-  // Attach dynamic clicks
+  
   document.getElementById("btn-read-daily").addEventListener("click", () => {
-    // Map today's verse to correct screen
-    // We parse the ref e.g. "కీర్తనల గ్రంథము 23:1" -> Psalms chapter 23
+    
+    
     let targetBook = "Psalms";
     let targetCh = "23";
     
@@ -311,7 +309,7 @@ function renderRecentlyRead() {
     return;
   }
   
-  // Get unique list of top 3 recent history items
+  
   const uniqueHistory = [];
   const map = new Map();
   for (const item of State.history) {
@@ -328,7 +326,7 @@ function renderRecentlyRead() {
     const bookObj = State.booksList.find(b => b.english === item.book);
     const teluguName = bookObj ? bookObj.telugu : item.book;
     
-    // Nice friendly time representation
+    
     const date = new Date(item.timestamp);
     const timeStr = date.toLocaleDateString('te-IN', { month: 'short', day: 'numeric' }) + " " + date.toLocaleTimeString('te-IN', { hour: '2-digit', minute: '2-digit' });
     
@@ -347,15 +345,15 @@ function renderRecentlyRead() {
 }
 
 function renderReadingStats() {
-  // Bookmarks count
+  
   document.getElementById("stat-bookmarks-count").textContent = State.bookmarks.length;
-  // Highlights count
+  
   document.getElementById("stat-highlights-count").textContent = Object.keys(State.highlights).length;
-  // Notes count
+  
   document.getElementById("stat-notes-count").textContent = Object.keys(State.notes).length;
   
-  // Reading plan completion calculation (Total chapters read in Bible)
-  // Total Bible chapters is 1189
+  
+  
   const totalReadCount = Object.keys(State.readChapters).length;
   const percent = Math.min(100, Math.round((totalReadCount / 1189) * 100));
   
@@ -368,7 +366,7 @@ function setupQuickNav() {
   const container = document.getElementById("quick-books-grid");
   if (!container) return;
   
-  let currentTestament = "ot"; // 'ot' (Old) or 'nt' (New)
+  let currentTestament = "ot"; 
   
   const otToggle = document.getElementById("toggle-ot");
   const ntToggle = document.getElementById("toggle-nt");
@@ -392,10 +390,10 @@ function setupQuickNav() {
   const renderBooksList = () => {
     container.innerHTML = "";
     
-    // Split point: Old Testament ends at Malachi (Book 39 in Bible index)
-    // Genesis starts, Malachi is 39th
-    // In Books.json, we have exactly 66 books sorted in canonical order.
-    // Index 0 to 38 are OT. Index 39 to 65 are NT.
+    
+    
+    
+    
     State.booksList.forEach((book, index) => {
       const isNT = index >= 39;
       if ((currentTestament === "ot" && isNT) || (currentTestament === "nt" && !isNT)) {
@@ -409,7 +407,7 @@ function setupQuickNav() {
         <span class="book-english">${book.english}</span>
       `;
       card.onclick = () => {
-        // Go straight to reader page for this book
+        
         navigateToReader(book.english, "1");
       };
       container.appendChild(card);
@@ -419,9 +417,9 @@ function setupQuickNav() {
   renderBooksList();
 }
 
-// --- SCREEN 2: BIBLE READER RENDER & LOGIC ---
+
 async function renderReaderScreen() {
-  // Stop SpeechSynthesis when changing chapters/books to avoid bleeding audio
+  
   if (typeof AudioPlayer !== 'undefined' && AudioPlayer.isReading) {
     AudioPlayer.stop();
   }
@@ -429,13 +427,13 @@ async function renderReaderScreen() {
   const versesContainer = document.getElementById("verses-scroll-container");
   if (!versesContainer) return;
   
-  // Set UI labels
+  
   const bookObj = State.booksList.find(b => b.english === State.currentBook);
   const bookTelugu = bookObj ? bookObj.telugu : State.currentBook;
   
   document.getElementById("btn-book-select").querySelector(".selector-value").textContent = `${bookTelugu} ${State.currentChapter}`;
   
-  // Show loaded loading screen first
+  
   versesContainer.innerHTML = `
     <div class="loading-container">
       <div class="spinner"></div>
@@ -443,7 +441,7 @@ async function renderReaderScreen() {
     </div>
   `;
   
-  // Load book data
+  
   const bookData = await fetchBookData(State.currentBook);
   if (!bookData) {
     versesContainer.innerHTML = `
@@ -454,7 +452,7 @@ async function renderReaderScreen() {
     return;
   }
   
-  // Find current chapter
+  
   const chapterData = bookData.chapters.find(ch => ch.chapter === State.currentChapter);
   if (!chapterData) {
     versesContainer.innerHTML = `
@@ -465,16 +463,16 @@ async function renderReaderScreen() {
     return;
   }
 
-  // Ensure currentVerse is valid for this chapter
+  
   const totalVersesInCh = chapterData.verses.length;
   if (parseInt(State.currentVerse) > totalVersesInCh) {
     State.currentVerse = "1";
   }
   
-  // Update verse selector label
+  
   document.getElementById("btn-verse-select").querySelector(".selector-value").textContent = State.currentVerse;
 
-  // Toggle Focus Mode active button state
+  
   const focusBtn = document.getElementById("btn-reader-focus");
   if (focusBtn) {
     if (State.settings.isFocusMode) {
@@ -484,7 +482,7 @@ async function renderReaderScreen() {
     }
   }
   
-  // Build verses list
+  
   let html = `<div class="verses-list">`;
   chapterData.verses.forEach(vs => {
     const key = `${State.currentBook}-${State.currentChapter}-${vs.verse}`;
@@ -507,15 +505,15 @@ async function renderReaderScreen() {
   });
   html += `</div>`;
   
-  // Set reader view controls
+  
   const nextBtn = document.getElementById("reader-next-btn");
   const prevBtn = document.getElementById("reader-prev-btn");
   
-  // Chapter pagination calculations
+  
   const totalChapters = parseInt(bookData.count);
   const currentChNum = parseInt(State.currentChapter);
   
-  // Next chapter action
+  
   if (currentChNum < totalChapters) {
     nextBtn.style.display = "flex";
     nextBtn.onclick = () => {
@@ -525,7 +523,7 @@ async function renderReaderScreen() {
       renderReaderScreen();
     };
   } else {
-    // Check if there is a next book
+    
     const currentBookIndex = State.booksList.findIndex(b => b.english === State.currentBook);
     if (currentBookIndex < State.booksList.length - 1) {
       nextBtn.style.display = "flex";
@@ -541,7 +539,7 @@ async function renderReaderScreen() {
     }
   }
   
-  // Previous chapter action
+  
   if (currentChNum > 1) {
     prevBtn.style.display = "flex";
     prevBtn.onclick = () => {
@@ -551,14 +549,14 @@ async function renderReaderScreen() {
       renderReaderScreen();
     };
   } else {
-    // Check if there is a previous book
+    
     const currentBookIndex = State.booksList.findIndex(b => b.english === State.currentBook);
     if (currentBookIndex > 0) {
       prevBtn.style.display = "flex";
       prevBtn.onclick = async () => {
         const prevBookName = State.booksList[currentBookIndex - 1].english;
         State.currentBook = prevBookName;
-        // Fetch book to know chapter count
+        
         const prevBookData = await fetchBookData(prevBookName);
         State.currentChapter = prevBookData ? prevBookData.count : "1";
         State.currentVerse = "1";
@@ -572,14 +570,14 @@ async function renderReaderScreen() {
   
   versesContainer.innerHTML = html;
 
-  // Toggle container focus-mode-active class
+  
   if (State.settings.isFocusMode) {
     versesContainer.classList.add("focus-mode-active");
   } else {
     versesContainer.classList.remove("focus-mode-active");
   }
 
-  // Scroll to targeted verse row beautifully
+  
   const targetRow = versesContainer.querySelector(`.verse-row[data-verse="${State.currentVerse}"]`);
   if (targetRow) {
     setTimeout(() => {
@@ -589,25 +587,25 @@ async function renderReaderScreen() {
         setTimeout(() => {
           targetRow.classList.remove("verse-pulse");
         }, 2000);
-        State.shouldPulseVerse = false; // Reset
+        State.shouldPulseVerse = false; 
       }
     }, 80);
   } else {
     versesContainer.scrollTop = 0;
   }
   
-  // Save to Reading History
+  
   const historyItem = {
     book: State.currentBook,
     chapter: State.currentChapter,
     timestamp: Date.now()
   };
-  // Prepend to history, filter duplicates, keep last 20 items
+  
   State.history.unshift(historyItem);
   State.history = State.history.slice(0, 30);
   saveData("history", State.history);
   
-  // Mark this chapter as Read
+  
   const readKey = `${State.currentBook}-${State.currentChapter}`;
   State.readChapters[readKey] = true;
   saveData("read_chapters", State.readChapters);
@@ -617,18 +615,18 @@ function updateReaderParams() {
   window.history.replaceState(null, "", `#reader?book=${encodeURIComponent(State.currentBook)}&chapter=${State.currentChapter}`);
 }
 
-// --- Interactive Verse Panel Context Handler ---
-let activeSelectedVerse = null; // Stores { verseNum, text, element }
+
+let activeSelectedVerse = null; 
 
 function handleVerseInteraction(element, verseNum, text) {
   if (State.settings.isFocusMode) {
     if (State.currentVerse !== verseNum) {
       State.currentVerse = verseNum;
       
-      // Update UI Selector
+      
       document.getElementById("btn-verse-select").querySelector(".selector-value").textContent = verseNum;
       
-      // Set focused class
+      
       document.querySelectorAll(".verse-row").forEach(r => {
         if (r.getAttribute("data-verse") === verseNum) {
           r.classList.add("focused");
@@ -637,9 +635,9 @@ function handleVerseInteraction(element, verseNum, text) {
         }
       });
       
-      // Scroll smoothly to center
+      
       element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      return; // Return early
+      return; 
     }
   }
 
@@ -657,7 +655,7 @@ function handleVerseInteraction(element, verseNum, text) {
   document.getElementById("action-verse-ref").textContent = refString;
   document.getElementById("action-verse-preview").textContent = text;
   
-  // Highlight indicator selection
+  
   const key = `${State.currentBook}-${State.currentChapter}-${verseNum}`;
   const hlColor = State.highlights[key] || "";
   
@@ -669,7 +667,7 @@ function handleVerseInteraction(element, verseNum, text) {
     }
   });
   
-  // Bookmark button state toggle
+  
   const hasBookmark = State.bookmarks.some(b => b.book === State.currentBook && b.chapter === State.currentChapter && b.verse === verseNum);
   const bookmarkBtn = document.getElementById("btn-action-bookmark");
   if (bookmarkBtn) {
@@ -682,7 +680,7 @@ function handleVerseInteraction(element, verseNum, text) {
     }
   }
   
-  // Open Notes input editor if notes exist
+  
   const noteText = State.notes[key] || "";
   const noteContainer = document.getElementById("action-note-input-container");
   const noteArea = document.getElementById("action-note-text");
@@ -696,7 +694,7 @@ function handleVerseInteraction(element, verseNum, text) {
     }
   }
   
-  // Show Sheet
+  
   sheet.classList.add("open");
   backdrop.classList.add("active");
 }
@@ -709,9 +707,9 @@ function closeVerseActions() {
   activeSelectedVerse = null;
 }
 
-// Setup Interactive Action Buttons Listeners
+
 function setupActionListeners() {
-  // Highlighter Circles Click
+  
   document.querySelectorAll(".hl-circle").forEach(circle => {
     circle.onclick = () => {
       if (!activeSelectedVerse) return;
@@ -719,21 +717,21 @@ function setupActionListeners() {
       const color = circle.getAttribute("data-color");
       const key = `${State.currentBook}-${State.currentChapter}-${activeSelectedVerse.verseNum}`;
       
-      // Update local state
+      
       if (color) {
         State.highlights[key] = color;
       } else {
-        delete State.highlights[key]; // Clear
+        delete State.highlights[key]; 
       }
       
       saveData("highlights", State.highlights);
       
-      // Dynamic rendering update without full redraw
+      
       const row = activeSelectedVerse.element;
       row.className = "verse-row";
       if (color) row.classList.add(`hl-${color}`);
       
-      // Retain bookmark border if active
+      
       const hasBookmark = State.bookmarks.some(b => b.book === State.currentBook && b.chapter === State.currentChapter && b.verse === activeSelectedVerse.verseNum);
       if (hasBookmark) row.classList.add("has-bookmark");
       
@@ -742,7 +740,7 @@ function setupActionListeners() {
     };
   });
   
-  // Bookmark Toggle action
+  
   document.getElementById("btn-action-bookmark").onclick = () => {
     if (!activeSelectedVerse) return;
     
@@ -750,12 +748,12 @@ function setupActionListeners() {
     const index = State.bookmarks.findIndex(b => b.book === State.currentBook && b.chapter === State.currentChapter && b.verse === verseNum);
     
     if (index > -1) {
-      // Remove bookmark
+      
       State.bookmarks.splice(index, 1);
       activeSelectedVerse.element.classList.remove("has-bookmark");
       showToast("బుక్‌మార్క్ తొలగించబడింది!");
     } else {
-      // Add bookmark
+      
       State.bookmarks.push({ book: State.currentBook, chapter: State.currentChapter, verse: verseNum });
       activeSelectedVerse.element.classList.add("has-bookmark");
       showToast("బుక్‌మార్క్ చేయబడింది!");
@@ -765,7 +763,7 @@ function setupActionListeners() {
     closeVerseActions();
   };
   
-  // Copy Verse action
+  
   document.getElementById("btn-action-copy").onclick = () => {
     if (!activeSelectedVerse) return;
     
@@ -779,7 +777,7 @@ function setupActionListeners() {
     });
   };
   
-  // Toggle Note Editor visibility
+  
   document.getElementById("btn-action-note").onclick = () => {
     const container = document.getElementById("action-note-input-container");
     container.classList.toggle("open");
@@ -788,7 +786,7 @@ function setupActionListeners() {
     }
   };
   
-  // Save Note Text
+  
   document.getElementById("btn-save-note").onclick = () => {
     if (!activeSelectedVerse) return;
     
@@ -807,7 +805,7 @@ function setupActionListeners() {
     closeVerseActions();
   };
   
-  // Share Native Action
+  
   document.getElementById("btn-action-share").onclick = () => {
     if (!activeSelectedVerse) return;
     
@@ -823,7 +821,7 @@ function setupActionListeners() {
         console.log("Share canceled", err);
       });
     } else {
-      // Fallback to copy and message
+      
       navigator.clipboard.writeText(shareText).then(() => {
         showToast("షేర్ చేయడానికి కాపీ చేయబడింది!");
       });
@@ -832,9 +830,9 @@ function setupActionListeners() {
   };
 }
 
-// --- BOOK AND CHAPTER CHOICE BOTTOM SHEETS ---
-let activeSelectionMode = ""; // 'book' or 'chapter'
-let tempSelectedBook = "";    // Temporarily holds selected book in drill-down
+
+let activeSelectionMode = ""; 
+let tempSelectedBook = "";    
 
 function openSelectorSheet(mode) {
   activeSelectionMode = mode;
@@ -850,10 +848,10 @@ function openSelectorSheet(mode) {
   
   if (mode === "book") {
     title.textContent = "పుస్తకాన్ని ఎంచుకోండి";
-    if (backBtn) backBtn.style.display = "none"; // Hide back button on book list
-    tempSelectedBook = ""; // Reset
+    if (backBtn) backBtn.style.display = "none"; 
+    tempSelectedBook = ""; 
     
-    // Render books categorised in vertical lists
+    
     const otTitle = document.createElement("h3");
     otTitle.className = "card-title";
     otTitle.style.marginTop = "0";
@@ -892,7 +890,7 @@ function openSelectorSheet(mode) {
       
       btn.onclick = () => {
         tempSelectedBook = book.english;
-        openSelectorSheet("chapter"); // Drill down to chapters within same sheet!
+        openSelectorSheet("chapter"); 
       };
       
       if (index >= 39) {
@@ -912,15 +910,15 @@ function openSelectorSheet(mode) {
     const bookTeluguName = bookObj ? bookObj.telugu : targetBookName;
     
     title.textContent = bookTeluguName;
-    if (backBtn) backBtn.style.display = "inline-flex"; // Show back button on chapter list
+    if (backBtn) backBtn.style.display = "inline-flex"; 
     
-    // We must fetch book data or look at loaded Cache to know chapter counts
+    
     const bookData = BookCache[targetBookName];
     if (!bookData) {
       content.innerHTML = `<div style="text-align:center; padding: 2rem;">లోడ్ అవుతోంది...</div>`;
-      // Load count in background
+      
       fetchBookData(targetBookName).then(data => {
-        if (data) openSelectorSheet("chapter"); // Re-run
+        if (data) openSelectorSheet("chapter"); 
       });
       return;
     }
@@ -937,7 +935,7 @@ function openSelectorSheet(mode) {
       btn.onclick = () => {
         State.currentBook = targetBookName;
         State.currentChapter = i.toString();
-        State.currentVerse = "1"; // Reset to verse 1
+        State.currentVerse = "1"; 
         closeSelectorSheet();
         updateReaderParams();
         renderReaderScreen();
@@ -947,13 +945,13 @@ function openSelectorSheet(mode) {
     content.appendChild(grid);
   } else if (mode === "verse") {
     title.textContent = "వచనాన్ని ఎంచుకోండి";
-    if (backBtn) backBtn.style.display = "none"; // Hide back button
+    if (backBtn) backBtn.style.display = "none"; 
     
     const bookData = BookCache[State.currentBook];
     if (!bookData) {
       content.innerHTML = `<div style="text-align:center; padding: 2rem;">లోడ్ అవుతోంది...</div>`;
       fetchBookData(State.currentBook).then(data => {
-        if (data) openSelectorSheet("verse"); // Re-run
+        if (data) openSelectorSheet("verse"); 
       });
       return;
     }
@@ -974,7 +972,7 @@ function openSelectorSheet(mode) {
       btn.textContent = i;
       btn.onclick = () => {
         State.currentVerse = i.toString();
-        State.shouldPulseVerse = true; // Trigger visual golden flash
+        State.shouldPulseVerse = true; 
         closeSelectorSheet();
         renderReaderScreen();
       };
@@ -995,12 +993,12 @@ function closeSelectorSheet() {
   activeSelectionMode = "";
 }
 
-// --- READER OPTIONS SETTINGS POPUP ---
+
 function openOptionsDialog() {
   document.getElementById("reader-options-dialog").classList.add("open");
   document.getElementById("modal-backdrop").classList.add("active");
   
-  // Set current slider value
+  
   document.getElementById("font-slider").value = State.settings.fontSize;
   document.getElementById("font-size-preview-val").textContent = State.settings.fontSize;
 }
@@ -1015,7 +1013,7 @@ function applySettings() {
   State.settings.fontSize = fontVal;
   saveData("settings", State.settings);
   
-  // Re-adjust active DOM font size instantly
+  
   document.querySelectorAll(".verse-text-body").forEach(body => {
     body.style.fontSize = `${fontVal}px`;
   });
@@ -1023,7 +1021,7 @@ function applySettings() {
   document.getElementById("font-size-preview-val").textContent = fontVal;
 }
 
-// --- SCREEN 3: ASYNCHRONOUS GLOBAL SEARCH SYSTEM ---
+
 let searchTaskTimer = null;
 
 function handleSearchInput(query) {
@@ -1044,7 +1042,7 @@ function handleSearchInput(query) {
     return;
   }
   
-  // Debounce key presses by 400ms to allow smooth typing
+  
   searchTaskTimer = setTimeout(() => {
     performGlobalSearch(trimQuery);
   }, 400);
@@ -1062,16 +1060,16 @@ async function performGlobalSearch(query) {
   `;
   stats.textContent = "శోధిస్తోంది...";
   
-  // Asynchronously scan across all books
+  
   const results = [];
   const queryLower = query.toLowerCase();
   
   try {
-    // Make sure books index list is ready
+    
     await fetchBooksIndex();
     
-    // We trigger dynamic fetches for all 66 books in sequence (in small parallel batches to avoid lockouts)
-    // Since books are in Service Worker Cache, fetches resolve almost instantly.
+    
+    
     const batchSize = 10;
     for (let i = 0; i < State.booksList.length; i += batchSize) {
       const batch = State.booksList.slice(i, i + batchSize);
@@ -1100,7 +1098,7 @@ async function performGlobalSearch(query) {
       }));
     }
     
-    // Render Results
+    
     if (results.length === 0) {
       container.innerHTML = `
         <div style="text-align: center; color: var(--text-muted); padding: 3rem 1rem;">
@@ -1114,8 +1112,8 @@ async function performGlobalSearch(query) {
     stats.textContent = `మొత్తం ${results.length} ఫలితాలు కనుగొనబడ్డాయి.`;
     
     let html = `<div class="search-results-list">`;
-    results.slice(0, 150).forEach(res => { // Cap rendering list at 150 for super fast rendering performance
-      // Regex highlight keywords
+    results.slice(0, 150).forEach(res => { 
+      
       const markedText = res.text.replace(new RegExp(`(${escapeRegExp(query)})`, 'gi'), '<mark>$1</mark>');
       
       html += `
@@ -1149,7 +1147,7 @@ function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// --- SCREEN 4: SAVED NOTES & BOOKMARKS HUB ---
+
 function renderSavedScreen() {
   const container = document.getElementById("saved-items-container");
   if (!container) return;
@@ -1168,7 +1166,7 @@ function renderSavedScreen() {
     }
     
     let html = `<div class="saved-items-list">`;
-    // Fetch bookmarks details
+    
     State.bookmarks.forEach((bm, index) => {
       const bookObj = State.booksList.find(b => b.english === bm.book);
       const teluguName = bookObj ? bookObj.telugu : bm.book;
@@ -1187,7 +1185,7 @@ function renderSavedScreen() {
         </div>
       `;
       
-      // Async fetch loaded text
+      
       fetchBookData(bm.book).then(data => {
         if (!data) return;
         const textElement = document.getElementById(`bm-text-${index}`);
@@ -1292,7 +1290,7 @@ function renderSavedScreen() {
     container.innerHTML = html;
     
   } else if (activeTab === "settings") {
-    // Render backup / restore settings screen
+    
     container.innerHTML = `
       <div class="settings-section">
         <h3 class="card-title" style="margin-top:0;">డేటా బ్యాకప్ & రీస్టోర్</h3>
@@ -1332,7 +1330,7 @@ function renderSavedScreen() {
   }
 }
 
-// Quick state mutator actions from Saved Hub
+
 window.removeBookmarkByIndex = function(index) {
   State.bookmarks.splice(index, 1);
   saveData("bookmarks", State.bookmarks);
@@ -1354,7 +1352,7 @@ window.removeNoteByKey = function(key) {
   showToast("నోట్ తొలగించబడింది!");
 };
 
-// --- DATA EXPORT & IMPORT ---
+
 window.exportUserData = function() {
   const exportBundle = {
     settings: State.settings,
@@ -1390,7 +1388,7 @@ window.importUserData = function(input) {
         throw new Error("Invalid backup schema");
       }
       
-      // Merge or overwrite state
+      
       State.settings = data.settings || State.settings;
       State.history = data.history || State.history;
       State.bookmarks = data.bookmarks || State.bookmarks;
@@ -1398,7 +1396,7 @@ window.importUserData = function(input) {
       State.notes = data.notes || State.notes;
       State.readChapters = data.readChapters || State.readChapters;
       
-      // Save all
+      
       saveData("settings", State.settings);
       saveData("history", State.history);
       saveData("bookmarks", State.bookmarks);
@@ -1406,7 +1404,7 @@ window.importUserData = function(input) {
       saveData("notes", State.notes);
       saveData("read_chapters", State.readChapters);
       
-      // Re-apply theme
+      
       applyTheme(State.settings.theme);
       renderSavedScreen();
       showToast("డేటా విజయవంతంగా రీస్టోర్ చేయబడింది!");
@@ -1425,7 +1423,7 @@ window.resetAllAppData = function() {
   }
 };
 
-// --- GLOBAL NAVIGATION AND TOAST NOTIFICATION UTILS ---
+
 window.navigateToReader = function(book, chapter) {
   State.currentBook = book;
   State.currentChapter = chapter;
@@ -1433,7 +1431,7 @@ window.navigateToReader = function(book, chapter) {
 };
 
 function showToast(message) {
-  // Create beautiful toast if not exists
+  
   let container = document.getElementById("toast-notification-container");
   if (!container) {
     container = document.createElement("div");
@@ -1469,7 +1467,7 @@ function showToast(message) {
   }, 2200);
 }
 
-// --- PWA INSTALLATION CONTROL PROMPT ---
+
 let deferredInstallPrompt = null;
 
 function setupPWAInstallPrompt() {
@@ -1479,24 +1477,39 @@ function setupPWAInstallPrompt() {
   
   if (!banner || !installBtn || !closeBtn) return;
   
+  
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  if (isStandalone) {
+    localStorage.setItem("pwa_installed", "true");
+  }
+
+  
+  if (localStorage.getItem("pwa_installed") === "true" || isStandalone) {
+    banner.classList.remove("open");
+    return;
+  }
+  
   window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent default Chrome banner
+    
     e.preventDefault();
     deferredInstallPrompt = e;
     
-    // Show custom high fidelity bottom bar banner
-    banner.classList.add("open");
+    
+    if (localStorage.getItem("pwa_installed") !== "true") {
+      banner.classList.add("open");
+    }
   });
   
   installBtn.onclick = () => {
     if (!deferredInstallPrompt) return;
     
-    // Trigger Chrome browser installation dialog
+    
     deferredInstallPrompt.prompt();
     
     deferredInstallPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
         console.log('[PWA] User accepted installation.');
+        localStorage.setItem("pwa_installed", "true");
         banner.classList.remove("open");
       }
       deferredInstallPrompt = null;
@@ -1506,9 +1519,17 @@ function setupPWAInstallPrompt() {
   closeBtn.onclick = () => {
     banner.classList.remove("open");
   };
+
+  
+  window.addEventListener('appinstalled', (evt) => {
+    console.log('[PWA] App was successfully installed.');
+    localStorage.setItem("pwa_installed", "true");
+    banner.classList.remove("open");
+    deferredInstallPrompt = null;
+  });
 }
 
-// --- READER SWIPE GESTURE CONTROLS ---
+
 function setupSwipeNavigation() {
   const container = document.getElementById("verses-scroll-container");
   if (!container) return;
@@ -1526,27 +1547,27 @@ function setupSwipeNavigation() {
   }, { passive: true });
   
   function handleSwipe() {
-    const threshold = 80; // Min pixels traveled
+    const threshold = 80; 
     const diff = touchEndX - touchStartX;
     
     if (Math.abs(diff) < threshold) return;
     
     if (diff > 0) {
-      // Swiped Right -> Go to Previous Chapter
+      
       document.getElementById("reader-prev-btn")?.click();
     } else {
-      // Swiped Left -> Go to Next Chapter
+      
       document.getElementById("reader-next-btn")?.click();
     }
   }
 }
 
-// --- BROWSER TEXT-TO-SPEECH AUDIO CONTROLLER ---
+
 const AudioPlayer = {
   isReading: false,
   isPaused: false,
   currentVerseIndex: 0,
-  versesList: [], // Array of { verseNum, text }
+  versesList: [], 
   utterance: null,
   speed: 1.0,
   
@@ -1562,7 +1583,7 @@ const AudioPlayer = {
       return;
     }
     
-    this.stop(); // Clear running voice
+    this.stop(); 
     
     const bookData = BookCache[State.currentBook];
     if (!bookData) return;
@@ -1596,10 +1617,10 @@ const AudioPlayer = {
     const verseObj = this.versesList[this.currentVerseIndex];
     this.highlightVerse(verseObj.verseNum);
     
-    window.speechSynthesis.cancel(); // Safety override
+    window.speechSynthesis.cancel(); 
     
     this.utterance = new SpeechSynthesisUtterance(verseObj.text);
-    this.utterance.lang = 'te-IN'; // Pure Telugu offline voice
+    this.utterance.lang = 'te-IN'; 
     this.utterance.rate = this.speed;
     
     this.utterance.onend = () => {
@@ -1633,7 +1654,7 @@ const AudioPlayer = {
     if (!this.isReading) return;
     window.speechSynthesis.resume();
     
-    // Fallback if browser SpeechSynthesis resume is bugged
+    
     if (!window.speechSynthesis.speaking) {
       this.readNext();
     } else {
@@ -1694,18 +1715,18 @@ const AudioPlayer = {
     if (!playBtn || !playIcon) return;
     
     if (this.isReading && !this.isPaused) {
-      // Show Pause SVG
+      
       playBtn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><rect x="5" y="4" width="4" height="16" rx="1" /><rect x="15" y="4" width="4" height="16" rx="1" id="audio-play-icon"/></svg>`;
       playBtn.classList.add("active");
     } else {
-      // Show Play SVG
+      
       playBtn.innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3" id="audio-play-icon"/></svg>`;
       playBtn.classList.remove("active");
     }
   }
 };
 
-// --- Focused Reading and Fast Reading Helper Functions ---
+
 function toggleFocusMode() {
   State.settings.isFocusMode = !State.settings.isFocusMode;
   saveData("settings", State.settings);
@@ -1718,7 +1739,7 @@ function toggleFocusMode() {
     if (container) {
       container.classList.add("focus-mode-active");
       
-      // Highlight currently selected verse row
+      
       const target = container.querySelector(`.verse-row[data-verse="${State.currentVerse}"]`);
       if (target) {
         document.querySelectorAll(".verse-row").forEach(r => r.classList.remove("focused"));
@@ -1762,30 +1783,30 @@ function navigateVerse(direction) {
   }
 }
 
-// --- CORE APP SETUP UPON LOAD ---
+
 async function main() {
   initDataStore();
   
-  // Register Service Worker
+  
   registerServiceWorker();
   
-  // Load Books metadata list
+  
   await fetchBooksIndex();
   
-  // Listen for navigation routing
+  
   window.addEventListener("hashchange", handleRouting);
   
-  // Trigger initial routing setup
+  
   handleRouting();
   
-  // Custom dialogs backdrop dismissal
+  
   document.getElementById("modal-backdrop").onclick = () => {
     closeVerseActions();
     closeSelectorSheet();
     closeOptionsDialog();
   };
   
-  // Selectors action triggers
+  
   document.getElementById("btn-book-select").onclick = () => openSelectorSheet("book");
   document.getElementById("btn-verse-select").onclick = () => openSelectorSheet("verse");
   document.getElementById("btn-reader-focus").onclick = () => toggleFocusMode();
@@ -1794,28 +1815,28 @@ async function main() {
   const backBtn = document.getElementById("btn-sheet-back");
   if (backBtn) {
     backBtn.onclick = () => {
-      openSelectorSheet("book"); // Navigate back to books grid
+      openSelectorSheet("book"); 
     };
   }
   
-  // Floating Actions trigger options modal
+  
   document.getElementById("btn-header-options").onclick = () => openOptionsDialog();
   document.getElementById("btn-options-close").onclick = () => closeOptionsDialog();
   
-  // Action events setup inside Verse panel
+  
   setupActionListeners();
   
-  // Live listener font slider changes
+  
   const fontSlider = document.getElementById("font-slider");
   fontSlider.oninput = applySettings;
   
-  // Themes are locked to Notebook style - click switch listeners removed
   
-  // Search key listeners
+  
+  
   const searchInput = document.getElementById("bible-search-input");
   searchInput.oninput = (e) => handleSearchInput(e.target.value);
   
-  // Saved Hub segment tabs setup
+  
   document.querySelectorAll(".saved-tab-btn").forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll(".saved-tab-btn").forEach(b => b.classList.remove("active"));
@@ -1824,11 +1845,11 @@ async function main() {
     };
   });
   
-  // Setup other structural gesture events
+  
   setupPWAInstallPrompt();
   setupSwipeNavigation();
 
-  // Speaker toggle button click listener
+  
   document.getElementById("btn-reader-audio").onclick = () => {
     const panel = document.getElementById("audio-panel");
     if (panel.style.display === "none") {
@@ -1838,7 +1859,7 @@ async function main() {
     }
   };
 
-  // Audio Player controls listeners
+  
   document.getElementById("audio-btn-play").onclick = () => {
     if (AudioPlayer.isReading && !AudioPlayer.isPaused) {
       AudioPlayer.pause();
@@ -1851,10 +1872,10 @@ async function main() {
   document.getElementById("audio-btn-prev").onclick = () => AudioPlayer.prev();
   document.getElementById("audio-speed-select").onchange = (e) => AudioPlayer.setSpeed(e.target.value);
 
-  // Desktop keyboard Arrow key listeners for smooth speed-reading traversal
+  
   window.addEventListener("keydown", (e) => {
     if (State.currentView !== "reader") return;
-    // Do not trigger key behaviors if user is writing in a form control or search field
+    
     if (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA") return;
     
     if (e.key === "ArrowDown" || e.key === "ArrowRight") {
@@ -1867,5 +1888,5 @@ async function main() {
   });
 }
 
-// Launch
+
 document.addEventListener("DOMContentLoaded", main);
